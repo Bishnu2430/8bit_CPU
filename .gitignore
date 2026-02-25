@@ -10,3 +10,10 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# Verilator output
+obj_dir/
+
+# Python
+__pycache__/
+*.pyc
