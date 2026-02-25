@@ -1,0 +1,12 @@
+# Build outputs
+build/cpu_test
+build/*.vcd
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
