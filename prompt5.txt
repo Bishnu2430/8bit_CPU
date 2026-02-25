@@ -1,0 +1,125 @@
+You are a senior CPU architect and hardware/software co-design engineer.
+
+I have built a custom 8-bit datapath, 16-bit address, multi-cycle RISC-style CPU in Verilog with:
+
+- 8 general purpose registers (R0–R7)
+- 16-bit instruction format
+- 6-bit signed immediate
+- Multi-cycle FSM (FETCH, DECODE, EXECUTE, WRITEBACK)
+- Arithmetic: ADD, SUB, AND, OR, XOR, ADDI
+- Branching: BEQ, BNE, BLT (signed)
+- JMP
+- LOAD, STORE
+- Harvard architecture
+- 256-word instruction memory
+- 256-byte data memory
+- Flags: Z, C, N, V
+
+Instruction Format:
+[15:12] opcode
+[11:9]  rd
+[8:6]   rs
+[5:0]   imm6 (signed for branches)
+
+Branch behavior:
+- PC increments during FETCH
+- PC load occurs in WRITEBACK
+- Branch target = pc_out + signed_offset
+- BLT uses negative XOR overflow
+
+I want to build a full development ecosystem.
+
+Your task has 3 parts:
+
+==================================================
+PART 1 — AUTO-GENERATED ASSEMBLER
+==================================================
+
+Design a minimal but robust assembler for this ISA.
+
+Requirements:
+- Implement in Python.
+- Input: simple assembly file (.asm)
+- Output: binary machine code (.mem or .hex)
+- Support labels for branching.
+- Support signed 6-bit offsets.
+- Support register syntax: R0–R7
+- Support immediate syntax: #value
+- Support comments.
+- Perform range checking (imm6 overflow detection).
+- Produce clear error messages.
+
+Deliver:
+- Instruction encoding table.
+- Two-pass assembler design.
+- Python implementation skeleton.
+- Example assembly program.
+- Example generated output.
+
+==================================================
+PART 2 — VERILATOR-BASED VISUAL SIMULATOR
+==================================================
+
+Design a simulation framework using Verilator.
+
+Goals:
+- Convert Verilog CPU into C++ simulation model.
+- Expose internal signals (PC, IR, registers, flags).
+- Create a C++ wrapper that:
+    - Steps clock cycle-by-cycle.
+    - Allows single-step execution.
+    - Dumps register state each cycle.
+- Integrate with:
+    - SDL OR
+    - Python (via shared memory or socket)
+    - OR simple console UI first.
+
+Deliver:
+- Verilator build command.
+- Top wrapper module design.
+- C++ simulation loop structure.
+- Recommended signal exposure strategy.
+- Suggested visualization architecture.
+- Clean separation between hardware model and GUI layer.
+
+==================================================
+PART 3 — DEBUG BUS FOR GUI INTEGRATION
+==================================================
+
+Design a debug interface inside the CPU for visualization.
+
+Requirements:
+- Non-intrusive (does not break normal execution).
+- Expose:
+    - PC
+    - Current instruction
+    - FSM state
+    - Register file contents
+    - Flags
+- Optional:
+    - Memory peek interface.
+    - Single-step mode.
+    - Halt instruction.
+
+Design:
+- Debug bus signal definition.
+- Debug register snapshot bus.
+- Controlled debug enable signal.
+- Option for memory-mapped debug interface.
+
+Deliver:
+- Verilog debug bus definition.
+- Clean integration into cpu_core.v.
+- Recommendations for FPGA future support.
+- Advice for scaling to pipelined CPU later.
+
+==================================================
+
+Constraints:
+- Keep current multi-cycle architecture.
+- Do not convert to single-cycle.
+- Keep design synthesizable.
+- Focus on modular expansion.
+- Provide structured, technical answer.
+- No generic explanation.
+- No casual tone.

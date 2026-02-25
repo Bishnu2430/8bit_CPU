@@ -1,0 +1,7 @@
+Assume this CPU will eventually be:
+- Synthesized to FPGA
+- Expanded to pipelined version
+- Used for educational visualization
+- Possibly extended to RISC-like architecture
+
+Design with long-term scalability in mind.
