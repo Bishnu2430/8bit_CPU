@@ -4,13 +4,11 @@
 // Instruction Memory (ROM)
 // 256 x 16-bit words, asynchronous read
 // ============================================================
-// BUG FIX v1.1:
-//   - Rewrote loop so R6 counts DOWN from 5 to 0 using ADDI with
-//     a negative immediate, avoiding the infinite-loop bug where
-//     SUB R6, R1 subtracted 5 every iteration making R6 always < R1.
-//   - Loop now: R6 = 5, loop: R6 = R6 - 1 (ADDI R6, #-1), BLT exits
-//     when R6 >= 0 i.e. the BLT (R6 < R0=0) condition becomes false.
-//   - Added NOP sentinel at end of program for clean simulation stop.
+// v1.2:
+//   - Loop now uses SUB R6, R7 (R7=1) to decrement R6 each iteration
+//     and BNE R6, R0 to branch back while R6 != 0.
+//   - Loop: R6 = 5, R7 = 1, LOOP: R6 = R6 - R7, BNE R6, R0, -2
+//   - NOP sentinel at end of program for clean simulation stop.
 // ============================================================
 
 module instruction_memory (
@@ -27,53 +25,46 @@ module instruction_memory (
             memory[i] = 16'b0000_000_000_000000; // NOP
 
         // ---------------------------------------------------------
-        // Program: matches example.asm and cpu_execution.md proof.
-        // Demonstrates ADDI, BEQ (taken), STORE, LOAD, and a finite
-        // BLT countdown loop with unconditional BEQ backward branch.
+        // Program: demonstrates ADDI, BEQ (taken), STORE, LOAD,
+        // SUB, and a finite BNE countdown loop.
         // ---------------------------------------------------------
 
-        // PC=0  ADDI R1, #5       → R1 = 0 + 5 = 5
-        memory[0]  = 16'b1001_001_000_000101;
+        // R1 = 5
+        memory[0] = 16'b1001_001_000_000101;  // ADDI R1, 5
 
-        // PC=1  ADDI R2, #5       → R2 = 0 + 5 = 5
-        memory[1]  = 16'b1001_010_000_000101;
+        // R2 = 5
+        memory[1] = 16'b1001_010_000_000101;  // ADDI R2, 5
 
-        // PC=2  BEQ R1, R2, +1    → if R1==R2: PC ← PC_f(3) + 1 = 4 (TAKEN)
-        memory[2]  = 16'b1011_001_010_000001;
+        // BEQ R1, R2, +1  (skip memory[3])
+        memory[2] = 16'b1011_001_010_000001;
 
-        // PC=3  ADDI R3, #1       → R3 = 1  ← SKIPPED by BEQ
-        memory[3]  = 16'b1001_011_000_000001;
+        // SKIPPED
+        memory[3] = 16'b1001_011_000_000001;  // ADDI R3, 1
 
-        // PC=4  ADDI R4, #9       → R4 = 9
-        memory[4]  = 16'b1001_100_000_001001;
+        // R4 = 9
+        memory[4] = 16'b1001_100_000_001001;  // ADDI R4, 9
 
-        // PC=5  STORE R4, #10     → MEM[10] ← R4 = 9
-        memory[5]  = 16'b0111_100_000_001010;
+        // STORE R4 → MEM[10]
+        memory[5] = 16'b0111_100_000_001010;
 
-        // PC=6  LOAD  R5, #10     → R5 ← MEM[10] = 9
-        memory[6]  = 16'b0110_101_000_001010;
+        // LOAD MEM[10] → R5
+        memory[6] = 16'b0110_101_000_001010;
 
-        // PC=7  ADDI R6, #5       → R6 = 5  (loop counter init)
-        memory[7]  = 16'b1001_110_000_000101;
+        // R6 = 5  (loop counter, small positive value)
+        memory[7] = 16'b1001_110_000_000101;  // ADDI R6, 5
 
-        // ---- Countdown loop: R6 counts 5→4→3→2→1→0→-1 ----
-        // LOOP:
-        // PC=8  ADDI R6, #-1      → R6 = R6 + (-1)
-        //       imm6 = 6'b111111 = -1 (two's complement)
-        memory[8]  = 16'b1001_110_000_111111;
+        // R7 = 1  (decrement step)
+        memory[8] = 16'b1001_111_000_000001;  // ADDI R7, 1
 
-        // PC=9  BLT R6, R0, +1    → if R6 < R0(=0): PC ← PC_f(10) + 1 = 11 (END)
-        //       Exits loop when R6 goes negative (N^V = 1)
-        //       imm6 = 6'b000001 = +1
-        memory[9]  = 16'b1101_110_000_000001;
+        // LOOP START (PC=9): R6 = R6 - R7
+        memory[9] = 16'b0010_110_111_000000;  // SUB R6, R7
 
-        // PC=10 BEQ R0, R0, -3    → unconditional back to LOOP (PC=8)
-        //       R0==R0 always true; PC ← PC_f(11) + (-3) = 8
-        //       imm6 = 6'b111101 = -3 (two's complement)
-        memory[10] = 16'b1011_000_000_111101;
+        // BNE R6, R0, -2  → if R6 != 0, go back to memory[9]
+        // PC after fetch = 11, offset = -2, target = 11 + (-2) = 9
+        memory[10] = 16'b1100_110_000_111110; // BNE R6, R0, -2
 
-        // PC=11 NOP — END sentinel (program complete)
-        memory[11] = 16'b0000_000_000_000000;
+        // Loop exits here — R6 == 0
+        memory[11] = 16'b0000_000_000_000000; // NOP
 
     end
 
