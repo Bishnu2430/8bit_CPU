@@ -13,6 +13,8 @@ module reg_file (
     assign read_data1 = registers[read_reg1];
     assign read_data2 = registers[read_reg2];
     always @(posedge clk) begin
-        if (reg_write) registers[write_reg] <= write_data;
+        // R0 is hardwired to zero — writes to register 0 are silently ignored
+        if (reg_write && write_reg != 3'b000)
+            registers[write_reg] <= write_data;
     end
 endmodule

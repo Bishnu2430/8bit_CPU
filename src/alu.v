@@ -20,13 +20,7 @@ always @(*) begin
     temp     = 9'b0;
 
     case (alu_op)
-        4'b0001: begin  // ADD
-            temp     = a + b;
-            result   = temp[7:0];
-            carry    = temp[8];
-            overflow = (a[7] == b[7]) && (result[7] != a[7]);
-        end
-        4'b1001: begin  // ADDI
+        4'b0001, 4'b1001: begin  // ADD / ADDI (same ALU operation)
             temp     = a + b;
             result   = temp[7:0];
             carry    = temp[8];
