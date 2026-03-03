@@ -41,8 +41,17 @@ module cpu_core_debug (
     wire [15:0] signed_offset;
     assign signed_offset = {{10{imm6[5]}}, imm6};
 
+    // Branch: PC-relative    (pc_out already = PC+1 from FETCH)
     wire [15:0] branch_target;
     assign branch_target = pc_out + signed_offset;
+
+    // JMP: absolute target   (zero-extended imm6)
+    wire [15:0] jmp_target;
+    assign jmp_target = {10'b0, imm6};
+
+    // Mux: JMP uses absolute address, branches use PC-relative
+    wire [15:0] pc_next;
+    assign pc_next = (opcode == 4'b1010) ? jmp_target : branch_target;
 
     // ── Fetch Unit ─────────────────────────────────────────
     fetch_unit fetch (
@@ -50,7 +59,7 @@ module cpu_core_debug (
         .reset          (reset),
         .pc_enable      (pc_enable),
         .pc_load        (pc_load),
-        .pc_in          (branch_target),
+        .pc_in          (pc_next),
         .ir_load        (ir_load),
         .instruction_out(instruction),
         .pc_out         (pc_out)
@@ -73,7 +82,8 @@ module cpu_core_debug (
     wire mem_write;
     wire zero, carry, negative, overflow;
 
-    // Step-mode: hold FSM in WRITEBACK until dbg_step deasserted
+    // Note: single-step (dbg_step) is a planned feature; the FSM does not
+    // yet honour fsm_hold.  The wire is kept for future integration.
     wire fsm_hold;
     assign fsm_hold = dbg_en & dbg_step & (ctrl.state == 2'b11);
 

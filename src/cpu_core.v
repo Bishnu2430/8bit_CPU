@@ -37,19 +37,28 @@ module cpu_core (
     wire [2:0] rs;
     wire [5:0] imm6;
 
-    // Signed 6-bit immediate sign-extended to 16 bits for PC arithmetic
+    // Signed 6-bit immediate sign-extended to 16 bits for branch arithmetic
     wire [15:0] signed_offset;
     assign signed_offset = {{10{imm6[5]}}, imm6};
 
+    // Branch: PC-relative    (pc_out already = PC+1 from FETCH)
     wire [15:0] branch_target;
     assign branch_target = pc_out + signed_offset;
+
+    // JMP: absolute target   (zero-extended imm6)
+    wire [15:0] jmp_target;
+    assign jmp_target = {10'b0, imm6};
+
+    // Mux: JMP uses absolute address, branches use PC-relative
+    wire [15:0] pc_next;
+    assign pc_next = (opcode == 4'b1010) ? jmp_target : branch_target;
 
     fetch_unit fetch (
         .clk            (clk),
         .reset          (reset),
         .pc_enable      (pc_enable),
         .pc_load        (pc_load),
-        .pc_in          (branch_target),
+        .pc_in          (pc_next),
         .ir_load        (ir_load),
         .instruction_out(instruction),
         .pc_out         (pc_out)

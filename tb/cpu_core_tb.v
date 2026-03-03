@@ -31,12 +31,21 @@ module cpu_core_tb;
         $dumpfile("cpu_dump.vcd");
         $dumpvars(0, cpu_core_tb);
 
+        $dumpvars(0, uut.rf.registers[0]);
+        $dumpvars(0, uut.rf.registers[1]);
+        $dumpvars(0, uut.rf.registers[2]);
+        $dumpvars(0, uut.rf.registers[3]);
+        $dumpvars(0, uut.rf.registers[4]);
+        $dumpvars(0, uut.rf.registers[5]);
+        $dumpvars(0, uut.rf.registers[6]);
+        $dumpvars(0, uut.rf.registers[7]);
+
         reset = 1;
         #10;
         reset = 0;
 
-        // Finite loop runs 6 iterations × 4 cycles × 10ns = 240ns
-        // Full program ~12 instructions + 6 loop iters = ~18 × 40ns = 720ns
+        // 8 instructions before loop + 6 loop iterations (17 instrs) + NOP
+        // = 26 instructions × 40ns/instr = ~1040ns.
         // Give generous headroom: 3000ns
         #3000;
 
@@ -53,8 +62,10 @@ module cpu_core_tb;
     end
 
     // --------------------------------------------------------
-    // Per-instruction display: fires at end of each WRITEBACK
-    // Shows register state AFTER writeback completes.
+    // Per-instruction display: fires at posedge during WRITEBACK.
+    // Due to NBA scheduling, register values shown are the state
+    // BEFORE this writeback commits (read occurs before NBA update).
+    // Final-state print is correct because NOP has no reg_write.
     // --------------------------------------------------------
     // NOP sentinel detection: stop after first NOP at PC >= 11
     always @(posedge clk) begin

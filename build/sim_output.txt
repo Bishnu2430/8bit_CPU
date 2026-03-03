@@ -1,4 +1,12 @@
 VCD info: dumpfile cpu_dump.vcd opened for output.
+VCD warning: array word cpu_core_tb.uut.rf.registers[0] will conflict with an escaped identifier.
+VCD warning: array word cpu_core_tb.uut.rf.registers[1] will conflict with an escaped identifier.
+VCD warning: array word cpu_core_tb.uut.rf.registers[2] will conflict with an escaped identifier.
+VCD warning: array word cpu_core_tb.uut.rf.registers[3] will conflict with an escaped identifier.
+VCD warning: array word cpu_core_tb.uut.rf.registers[4] will conflict with an escaped identifier.
+VCD warning: array word cpu_core_tb.uut.rf.registers[5] will conflict with an escaped identifier.
+VCD warning: array word cpu_core_tb.uut.rf.registers[6] will conflict with an escaped identifier.
+VCD warning: array word cpu_core_tb.uut.rf.registers[7] will conflict with an escaped identifier.
 t=45000  WB  PC=01  op=1001  R0=0 R1=0 R2=0 R3=0 R4=0 R5=0 R6=0 R7=0
 t=85000  WB  PC=02  op=1001  R0=0 R1=5 R2=0 R3=0 R4=0 R5=0 R6=0 R7=0
 t=125000  WB  PC=03  op=1011  R0=0 R1=5 R2=5 R3=0 R4=0 R5=0 R6=0 R7=0
@@ -7,21 +15,27 @@ t=205000  WB  PC=06  op=0111  R0=0 R1=5 R2=5 R3=0 R4=9 R5=0 R6=0 R7=0
 t=245000  WB  PC=07  op=0110  R0=0 R1=5 R2=5 R3=0 R4=9 R5=0 R6=0 R7=0
 t=285000  WB  PC=08  op=1001  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=0 R7=0
 t=325000  WB  PC=09  op=1001  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=5 R7=0
-t=365000  WB  PC=10  op=0010  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=5 R7=1
-t=405000  WB  PC=11  op=1100  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=4 R7=1
-t=445000  WB  PC=10  op=0010  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=4 R7=1
-t=485000  WB  PC=11  op=1100  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=3 R7=1
-t=525000  WB  PC=10  op=0010  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=3 R7=1
-t=565000  WB  PC=11  op=1100  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=2 R7=1
-t=605000  WB  PC=10  op=0010  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=2 R7=1
-t=645000  WB  PC=11  op=1100  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=1 R7=1
-t=685000  WB  PC=10  op=0010  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=1 R7=1
-t=725000  WB  PC=11  op=1100  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=0 R7=1
-t=765000  WB  PC=12  op=0000  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=0 R7=1
+t=365000  WB  PC=10  op=1101  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=4 R7=0
+t=405000  WB  PC=11  op=1011  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=4 R7=0
+t=445000  WB  PC=09  op=1001  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=4 R7=0
+t=485000  WB  PC=10  op=1101  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=3 R7=0
+t=525000  WB  PC=11  op=1011  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=3 R7=0
+t=565000  WB  PC=09  op=1001  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=3 R7=0
+t=605000  WB  PC=10  op=1101  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=2 R7=0
+t=645000  WB  PC=11  op=1011  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=2 R7=0
+t=685000  WB  PC=09  op=1001  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=2 R7=0
+t=725000  WB  PC=10  op=1101  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=1 R7=0
+t=765000  WB  PC=11  op=1011  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=1 R7=0
+t=805000  WB  PC=09  op=1001  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=1 R7=0
+t=845000  WB  PC=10  op=1101  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=0 R7=0
+t=885000  WB  PC=11  op=1011  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=0 R7=0
+t=925000  WB  PC=09  op=1001  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=0 R7=0
+t=965000  WB  PC=10  op=1101  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=255 R7=0
+t=1005000  WB  PC=12  op=0000  R0=0 R1=5 R2=5 R3=0 R4=9 R5=9 R6=255 R7=0
 
 === NOP sentinel reached — program complete ===
 Final register state:
   R0=0  R1=5  R2=5  R3=0
-  R4=9  R5=9  R6=0  R7=1
+  R4=9  R5=9  R6=255  R7=0
   PC=12
-tb/cpu_core_tb.v:80: $finish called at 765000 (1ps)
+tb/cpu_core_tb.v:91: $finish called at 1005000 (1ps)

@@ -4,10 +4,11 @@
 // Instruction Memory (ROM)
 // 256 x 16-bit words, asynchronous read
 // ============================================================
-// v1.2:
-//   - Loop now uses SUB R6, R7 (R7=1) to decrement R6 each iteration
-//     and BNE R6, R0 to branch back while R6 != 0.
-//   - Loop: R6 = 5, R7 = 1, LOOP: R6 = R6 - R7, BNE R6, R0, -2
+// v1.3 (final):
+//   - ROM contents now match example.asm / assembler output.
+//   - Loop uses ADDI R6,#-1 to decrement, BLT R6,R0 to exit
+//     when R6 goes negative, and BEQ R0,R0 as unconditional
+//     backward branch.
 //   - NOP sentinel at end of program for clean simulation stop.
 // ============================================================
 
@@ -26,45 +27,24 @@ module instruction_memory (
 
         // ---------------------------------------------------------
         // Program: demonstrates ADDI, BEQ (taken), STORE, LOAD,
-        // SUB, and a finite BNE countdown loop.
+        // ADDI (negative imm), BLT, and a finite backward loop.
+        // Matches example.asm / assembler output exactly.
         // ---------------------------------------------------------
 
-        // R1 = 5
-        memory[0] = 16'b1001_001_000_000101;  // ADDI R1, 5
-
-        // R2 = 5
-        memory[1] = 16'b1001_010_000_000101;  // ADDI R2, 5
-
-        // BEQ R1, R2, +1  (skip memory[3])
-        memory[2] = 16'b1011_001_010_000001;
-
-        // SKIPPED
-        memory[3] = 16'b1001_011_000_000001;  // ADDI R3, 1
-
-        // R4 = 9
-        memory[4] = 16'b1001_100_000_001001;  // ADDI R4, 9
-
-        // STORE R4 → MEM[10]
-        memory[5] = 16'b0111_100_000_001010;
-
-        // LOAD MEM[10] → R5
-        memory[6] = 16'b0110_101_000_001010;
-
-        // R6 = 5  (loop counter, small positive value)
-        memory[7] = 16'b1001_110_000_000101;  // ADDI R6, 5
-
-        // R7 = 1  (decrement step)
-        memory[8] = 16'b1001_111_000_000001;  // ADDI R7, 1
-
-        // LOOP START (PC=9): R6 = R6 - R7
-        memory[9] = 16'b0010_110_111_000000;  // SUB R6, R7
-
-        // BNE R6, R0, -2  → if R6 != 0, go back to memory[9]
-        // PC after fetch = 11, offset = -2, target = 11 + (-2) = 9
-        memory[10] = 16'b1100_110_000_111110; // BNE R6, R0, -2
-
-        // Loop exits here — R6 == 0
-        memory[11] = 16'b0000_000_000_000000; // NOP
+        memory[0]  = 16'b1001_001_000_000101;  // ADDI R1, #5
+        memory[1]  = 16'b1001_010_000_000101;  // ADDI R2, #5
+        memory[2]  = 16'b1011_001_010_000001;  // BEQ  R1, R2, +1 (skip addr 3)
+        memory[3]  = 16'b1001_011_000_000001;  // ADDI R3, #1     (SKIPPED)
+        memory[4]  = 16'b1001_100_000_001001;  // ADDI R4, #9
+        memory[5]  = 16'b0111_100_000_001010;  // STORE R4, #10
+        memory[6]  = 16'b0110_101_000_001010;  // LOAD  R5, #10
+        memory[7]  = 16'b1001_110_000_000101;  // ADDI R6, #5     (loop counter)
+        // LOOP (PC=8):
+        memory[8]  = 16'b1001_110_000_111111;  // ADDI R6, #-1
+        memory[9]  = 16'b1101_110_000_000001;  // BLT  R6, R0, +1 → END (addr 11)
+        memory[10] = 16'b1011_000_000_111101;  // BEQ  R0, R0, -3 → LOOP (addr 8)
+        // END:
+        memory[11] = 16'b0000_000_000_000000;  // NOP (sentinel)
 
     end
 

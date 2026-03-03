@@ -1,6 +1,7 @@
 # Build outputs
 build/cpu_test
 build/*.vcd
+cpu_dump.vcd
 
 # OS files
 .DS_Store
