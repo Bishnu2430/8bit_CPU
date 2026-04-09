@@ -1,22 +1,39 @@
 `timescale 1ns/1ps
 // ============================================================
-// instruction_memory.v — matches instruction_memory.dig exactly
+// instruction_memory.v — RTL translation of
+//                        instruction_memory.dig
 //
 // .dig implementation:
 //   ROM element (AddrBits=8, Bits=16)
-//   Data string: 9205,9405,b281,9601,9809,780a,6a0a,9c05,9c3f,dc01,b03d,0000
-//   (12 entries; remaining 244 addresses read as 0x0000 = NOP)
+//   Always-enabled via Const(1) on the ROM enable pin.
+//   Read is asynchronous (combinational) — no clock pin on ROM.
 //
-//   The .dig file in the repository has "a00b" as the 12th entry (index 11).
-//   That is JMP #11, which creates an infinite loop and does NOT match the
-//   Verilog simulation output in build/sim_output.txt (which terminates on
-//   NOP).  The assembler output (build/example.hex) also has NOP at [011].
-//   This file corrects entry [11] to 0x0000 (NOP) to match assembler output.
+//   address input:  8-bit — driven by pc_out[7:0] from
+//                   cpu_core_test.dig via Splitter(16→8,8).
+//                   Upper 8 bits of the 16-bit PC are discarded,
+//                   limiting program size to 256 instructions.
 //
-//   In: address[7:0]  (only lower 8 bits used, upper 8 ignored — matches .dig)
-//       Const(1) tied to the ROM's enable pin — always enabled
-//   Out: instruction[15:0]
-//   Read: asynchronous (combinational assign)
+//   instruction output: 16-bit, combinationally valid whenever
+//                       address changes.
+//
+// ROM data string (from instruction_memory.dig, corrected):
+//   Entry 0x0B was 0xA00B (JMP #11 → infinite loop).
+//   Corrected to 0x0000 (NOP) to match assembler output.
+//
+//   Address  Hex     Disassembly
+//   0x00     0x9205  ADDI R1, #5
+//   0x01     0x9405  ADDI R2, #5
+//   0x02     0xB281  BEQ  R1, R2, +1  (skip 0x03, branch to 0x04)
+//   0x03     0x9601  ADDI R3, #1      (skipped)
+//   0x04     0x9809  ADDI R4, #9
+//   0x05     0x780A  STORE R4, #10
+//   0x06     0x6A0A  LOAD  R5, #10
+//   0x07     0x9C05  ADDI R6, #5      (loop counter init)
+//   0x08     0x9C3F  ADDI R6, #-1    (LOOP top)
+//   0x09     0xDC01  BLT  R6, R0, +1  (exit if R6 < 0)
+//   0x0A     0xB03D  BEQ  R0, R0, -3  (unconditional → 0x08)
+//   0x0B     0x0000  NOP              (END sentinel)
+//   0x0C-FF  0x0000  NOP              (all remaining slots zeroed)
 // ============================================================
 
 module instruction_memory (
@@ -28,25 +45,24 @@ module instruction_memory (
 
     integer i;
     initial begin
-        // Zero all slots first (NOP)
+        // Zero all slots first (NOP = 0x0000)
         for (i = 0; i < 256; i = i + 1)
             memory[i] = 16'h0000;
 
-        // ---- ROM contents matching instruction_memory.dig data string ----
-        // 9205,9405,b281,9601,9809,780a,6a0a,9c05,9c3f,dc01,b03d,0000
-        memory[0]  = 16'h9205;   // ADDI R1, #5
-        memory[1]  = 16'h9405;   // ADDI R2, #5
-        memory[2]  = 16'hB281;   // BEQ  R1, R2, +1
-        memory[3]  = 16'h9601;   // ADDI R3, #1  (skipped)
-        memory[4]  = 16'h9809;   // ADDI R4, #9
-        memory[5]  = 16'h780A;   // STORE R4, #10
-        memory[6]  = 16'h6A0A;   // LOAD  R5, #10
-        memory[7]  = 16'h9C05;   // ADDI R6, #5
-        memory[8]  = 16'h9C3F;   // ADDI R6, #-1   (LOOP top)
-        memory[9]  = 16'hDC01;   // BLT  R6, R0, +1
-        memory[10] = 16'hB03D;   // BEQ  R0, R0, -3
-        memory[11] = 16'h0000;   // NOP  (END sentinel)
-        // [12..255] remain 0x0000
+        // ---- ROM contents matching .dig data string (corrected) ----
+        memory[8'h00] = 16'h9205;   // ADDI R1, #5
+        memory[8'h01] = 16'h9405;   // ADDI R2, #5
+        memory[8'h02] = 16'hB281;   // BEQ  R1, R2, +1
+        memory[8'h03] = 16'h9601;   // ADDI R3, #1   (skipped by BEQ)
+        memory[8'h04] = 16'h9809;   // ADDI R4, #9
+        memory[8'h05] = 16'h780A;   // STORE R4, #10
+        memory[8'h06] = 16'h6A0A;   // LOAD  R5, #10
+        memory[8'h07] = 16'h9C05;   // ADDI R6, #5   (loop counter init)
+        memory[8'h08] = 16'h9C3F;   // ADDI R6, #-1  (LOOP top)
+        memory[8'h09] = 16'hDC01;   // BLT  R6, R0, +1
+        memory[8'h0A] = 16'hB03D;   // BEQ  R0, R0, -3
+        memory[8'h0B] = 16'h0000;   // NOP  (END sentinel) — was 0xA00B in .dig
+        // [0x0C..0xFF] remain 0x0000 (NOP)
     end
 
     // Asynchronous read — Digital ROM has no clock on read port

@@ -1,34 +1,39 @@
 `timescale 1ns/1ps
 // ============================================================
-// data_memory.v — matches data_memory.dig exactly
+// data_memory.v — RTL translation of data_memory.dig
 //
 // .dig implementation:
 //   RAMDualPort element (AddrBits=8, Bits=8)
+//   256 × 8-bit synchronous dual-port RAM.
 //
-//   RAMDualPort in Digital has TWO independent ports:
-//     Port A (write port):
-//       A_addr  = address[7:0]
-//       A_din   = write_data[7:0]
-//       A_we    = mem_write       (write-enable)
-//       A_clk   = clk
+//   Port A (write port):
+//     A_addr  = address[7:0]   — same wire as Port B address
+//     A_din   = write_data[7:0]
+//     A_we    = mem_write       — asserted in WRITEBACK for STORE
+//     A_clk   = clk
 //
-//     Port B (read port):
-//       B_addr  = address[7:0]   (same address bus wired to both ports in .dig)
-//       B_dout  = read_data[7:0]
-//       B_re    = mem_read        (read-enable)
-//       B_clk   = clk
+//   Port B (read port):
+//     B_addr  = address[7:0]   — same wire as Port A address
+//     B_dout  = read_data[7:0]
+//     B_re    = mem_read        — asserted in EXECUTE + WRITEBACK for LOAD
+//     B_clk   = clk
 //
-//   Both ports are synchronous (registered on posedge clk).
-//   Read data is registered — mem_read must be held for one cycle
-//   before read_data is valid (matches the two-cycle LOAD in the FSM).
+//   CRITICAL: The single 'address' In port in data_memory.dig
+//   connects to BOTH the Port A address input and the Port B
+//   address input. Both ports share the same address bus.
 //
-//   Wire tracing from data_memory.dig:
-//     address    → RAMDualPort port at pos x=360 (address input top)
-//     write_data → RAMDualPort (data input)
-//     mem_write  → RAMDualPort write-enable
-//     mem_read   → RAMDualPort read-enable
-//     clk        → RAMDualPort clock
-//     read_data  ← RAMDualPort data output (pos x=420,y=100 → Out at 460)
+//   Both ports are synchronous — registered on posedge clk.
+//   The read output is registered, so LOAD requires two cycles:
+//
+//   Two-cycle LOAD sequence:
+//     EXECUTE:   mem_read=1; RAMDualPort Port B captures address
+//                on this posedge clk
+//     WRITEBACK: mem_read=1 held; read_data is now valid;
+//                reg_write=1 routes mem_data to register file
+//
+//   Address source from cpu_core_test.dig:
+//     address = {2'b00, imm6[5:0]} — zero-extended to 8-bit
+//     Accessible range: 0x00–0x3F (0–63) in v0.3
 // ============================================================
 
 module data_memory (
@@ -45,21 +50,23 @@ module data_memory (
     integer i;
     initial begin
         for (i = 0; i < 256; i = i + 1)
-            memory[i] = 8'b0;
+            memory[i] = 8'h00;
     end
 
-    // Port A — synchronous write
-    // Port B — synchronous read (registered output, matching RAMDualPort)
+    // ---- Port A: synchronous write --------------------------------
+    // ---- Port B: synchronous read (registered output) ------------
+    // Both ports share the same address bus, clocked on posedge.
+    // This matches RAMDualPort behaviour in Digital exactly:
+    // the read output updates on the same rising edge that re is
+    // sampled, so read_data is valid in the cycle AFTER mem_read
+    // is asserted — i.e. valid in WRITEBACK when asserted in EXECUTE.
     always @(posedge clk) begin
-        // Write port (A)
+        // Port A — write
         if (mem_write)
             memory[address] <= write_data;
 
-        // Read port (B) — registered, same address bus
-        // RAMDualPort: read captures address on posedge when re=1,
-        // output is valid the same posedge (registered-through, not next cycle)
-        // Digital's RAMDualPort read output updates on the same rising edge
-        // that re is sampled, matching the FSM's two-cycle LOAD.
+        // Port B — registered read
+        // read_data valid one cycle after mem_read asserted
         if (mem_read)
             read_data <= memory[address];
     end
