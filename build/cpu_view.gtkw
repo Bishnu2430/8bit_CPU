@@ -1,0 +1,52 @@
+[*]
+[*] GTKWave Analyzer v3.3.108 (w)1999-2020 BSI
+[*] Thu Apr 09 09:37:22 2026
+[*]
+[dumpfile] "D:\8-Bit_CPU\build\cpu_dump.vcd"
+[savefile] "D:\8-Bit_CPU\build\cpu_view.gtkw"
+[timestart] 0
+[size] 1920 1033
+[pos] -187 -184
+*-17.135538 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] cpu_core_tb.
+[treeopen] cpu_core_tb.uut.
+[treeopen] cpu_core_tb.uut.fetch.
+[treeopen] cpu_core_tb.uut.rf.
+[sst_width] 288
+[signals_width] 210
+[sst_expanded] 1
+[sst_vpaned_height] 306
+@28
+cpu_core_tb.uut.ctrl.state[1:0]
+cpu_core_tb.uut.ctrl.pc_enable
+cpu_core_tb.uut.ctrl.ir_load
+cpu_core_tb.uut.ctrl.reg_write
+@22
+cpu_core_tb.uut.pc_out[15:0]
+cpu_core_tb.uut.instruction[15:0]
+cpu_core_tb.uut.opcode[3:0]
+@28
+cpu_core_tb.uut.rd[2:0]
+cpu_core_tb.uut.rs[2:0]
+@22
+cpu_core_tb.uut.imm6[5:0]
+cpu_core_tb.uut.alu_unit.a[7:0]
+cpu_core_tb.uut.alu_unit.b[7:0]
+cpu_core_tb.uut.alu_unit.result[7:0]
+@28
+cpu_core_tb.uut.zero
+cpu_core_tb.uut.negative
+cpu_core_tb.uut.carry
+cpu_core_tb.uut.overflow
+cpu_core_tb.uut.dm.mem_read
+cpu_core_tb.uut.dm.mem_write
+@22
+cpu_core_tb.uut.dm.read_data[7:0]
+cpu_core_tb.uut.write_data[7:0]
+cpu_core_tb.uut.rf.\registers[1][7:0]
+cpu_core_tb.uut.rf.\registers[2][7:0]
+cpu_core_tb.uut.rf.\registers[3][7:0]
+@23
+cpu_core_tb.uut.pc_next[15:0]
+[pattern_trace] 1
+[pattern_trace] 0
